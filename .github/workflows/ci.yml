@@ -34,7 +34,15 @@ jobs:
         run: uv run mypy src/app/
 
       - name: Test with coverage
-        run: uv run pytest --cov-report=xml
+        run: uv run pytest --cov-report=xml --junit-xml=pytest-report.xml
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit & Integration Tests
+          path: pytest-report.xml
+          reporter: java-junit
 
       - name: Upload coverage report
         uses: codecov/codecov-action@v5
