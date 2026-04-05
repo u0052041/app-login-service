@@ -28,14 +28,10 @@ async def test_logout_revokes_refresh_token(client, db_session) -> None:
     await client.post("/auth/logout", json={"refresh_token": tokens["refresh_token"]})
 
     # Refresh token should now be invalid
-    response = await client.post(
-        "/auth/refresh", json={"refresh_token": tokens["refresh_token"]}
-    )
+    response = await client.post("/auth/refresh", json={"refresh_token": tokens["refresh_token"]})
     assert response.status_code == 401
 
 
 async def test_logout_invalid_token(client) -> None:
-    response = await client.post(
-        "/auth/logout", json={"refresh_token": "invalid_token"}
-    )
+    response = await client.post("/auth/logout", json={"refresh_token": "invalid_token"})
     assert response.status_code == 401

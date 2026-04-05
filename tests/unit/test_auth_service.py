@@ -91,6 +91,7 @@ class TestLogin:
     async def test_login_success_returns_token_pair(self) -> None:
         user = _make_user()
         from app.core.security import hash_password
+
         user.hashed_password = hash_password("Secret123!")
 
         user_repo = AsyncMock()
@@ -123,6 +124,7 @@ class TestLogin:
     async def test_login_wrong_password_raises_unauthorized(self) -> None:
         user = _make_user()
         from app.core.security import hash_password
+
         user.hashed_password = hash_password("correct_password")
 
         user_repo = AsyncMock()
@@ -139,6 +141,7 @@ class TestLogin:
     async def test_login_inactive_user_raises_forbidden(self) -> None:
         user = _make_user(is_active=False)
         from app.core.security import hash_password
+
         user.hashed_password = hash_password("Secret123!")
 
         user_repo = AsyncMock()

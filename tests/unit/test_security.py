@@ -1,6 +1,5 @@
 """Unit tests for src/app/core/security.py"""
 
-
 import pytest
 
 from app.core.security import (
@@ -67,12 +66,14 @@ class TestAccessToken:
 
     def test_decode_access_token_invalid_raises(self) -> None:
         from fastapi import HTTPException
+
         with pytest.raises(HTTPException) as exc_info:
             decode_access_token("not.a.valid.token")
         assert exc_info.value.status_code == 401
 
     def test_decode_access_token_tampered_raises(self) -> None:
         from fastapi import HTTPException
+
         token = create_access_token(subject="user-abc")
         tampered = token[:-5] + "XXXXX"
         with pytest.raises(HTTPException):
@@ -80,6 +81,7 @@ class TestAccessToken:
 
     def test_decode_access_token_expired_raises(self) -> None:
         from fastapi import HTTPException
+
         # Create token that expires immediately
         token = create_access_token(subject="user-abc", expire_minutes=-1)
         with pytest.raises(HTTPException) as exc_info:
