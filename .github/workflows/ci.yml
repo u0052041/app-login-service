@@ -39,6 +39,9 @@ jobs:
       - name: Lint (ruff)
         run: uv run ruff check src/ tests/
 
+      - name: Format check (ruff)
+        run: uv run ruff format --check src/ tests/
+
       - name: Type check (mypy)
         run: uv run mypy src/app/
 
@@ -47,7 +50,8 @@ jobs:
           uv run pytest \
             --junit-xml=pytest-report.xml \
             --cov-report=xml \
-            --cov-report=term-missing
+            --cov-report=term-missing \
+            --cov-fail-under=80
 
       - name: Publish test results
         uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc  # v1
