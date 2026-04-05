@@ -10,6 +10,9 @@ jobs:
   test:
     name: Lint · Type Check · Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
 
     steps:
       - uses: actions/checkout@v4.2.2
