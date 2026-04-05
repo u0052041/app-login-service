@@ -37,7 +37,11 @@ jobs:
         run: uv run mypy src/app/
 
       - name: Test with coverage
-        run: uv run pytest --cov-report=xml --junit-xml=pytest-report.xml
+        run: |
+          uv run pytest \
+            --junit-xml=pytest-report.xml \
+            --cov-report=xml \
+            --cov-report=term-missing
 
       - name: Publish test results
         uses: dorny/test-reporter@v1
@@ -47,9 +51,11 @@ jobs:
           path: pytest-report.xml
           reporter: java-junit
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v5
+      - name: Coverage summary
         if: always()
-        with:
-          files: ./coverage.xml
-          fail_ci_if_error: false
+        run: |
+          echo "## Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          uv run coverage report --skip-empty >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
