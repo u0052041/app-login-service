@@ -115,16 +115,11 @@ spec:
                 container('aws-tools') {
                     sh """
                         export KUBECONFIG=/tmp/kubeconfig
-                        IMAGE_FULL=${env.IMAGE_FULL} \
+                        export IMAGE_FULL=${env.IMAGE_FULL}
+                        export WILDCARD_CERT_ARN=${env.WILDCARD_CERT_ARN}
                         envsubst < k8s/deployment.yaml | kubectl apply -f -
-
-                        WILDCARD_CERT_ARN=${env.WILDCARD_CERT_ARN} \
                         envsubst < k8s/ingress.yaml | kubectl apply -f -
-                    """
-                    sh """
-                        export KUBECONFIG=/tmp/kubeconfig
-                        kubectl rollout status deployment/${IMAGE_NAME} \
-                            -n ${K8S_NAMESPACE} --timeout=120s
+                        kubectl rollout status deployment/${IMAGE_NAME} -n ${K8S_NAMESPACE} --timeout=120s
                     """
                 }
             }
@@ -147,7 +142,10 @@ spec:
     post {
         failure {
             container('aws-tools') {
-                sh "export KUBECONFIG=/tmp/kubeconfig && kubectl rollout undo deployment/${IMAGE_NAME} -n ${K8S_NAMESPACE} || true"
+                sh """
+                    export KUBECONFIG=/tmp/kubeconfig
+                    kubectl rollout undo deployment/${IMAGE_NAME} -n ${K8S_NAMESPACE} || true
+                """
             }
         }
     }
