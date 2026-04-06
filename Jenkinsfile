@@ -92,7 +92,7 @@ spec:
         stage('Configure kubectl') {
             steps {
                 container('aws-tools') {
-                    sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION}"
+                    sh "aws eks update-kubeconfig --name ${CLUSTER_NAME} --region ${AWS_REGION} --kubeconfig /tmp/kubeconfig"
                 }
             }
         }
@@ -114,6 +114,7 @@ spec:
             steps {
                 container('aws-tools') {
                     sh """
+                        export KUBECONFIG=/tmp/kubeconfig
                         IMAGE_FULL=${env.IMAGE_FULL} \
                         envsubst < k8s/deployment.yaml | kubectl apply -f -
 
@@ -121,6 +122,7 @@ spec:
                         envsubst < k8s/ingress.yaml | kubectl apply -f -
                     """
                     sh """
+                        export KUBECONFIG=/tmp/kubeconfig
                         kubectl rollout status deployment/${IMAGE_NAME} \
                             -n ${K8S_NAMESPACE} --timeout=120s
                     """
@@ -131,9 +133,12 @@ spec:
         stage('Verify') {
             steps {
                 container('aws-tools') {
-                    sh "kubectl get pods -l app=${IMAGE_NAME} -n ${K8S_NAMESPACE}"
-                    sh "kubectl get svc ${IMAGE_NAME} -n ${K8S_NAMESPACE}"
-                    sh "kubectl get ingress ${IMAGE_NAME} -n ${K8S_NAMESPACE}"
+                    sh """
+                        export KUBECONFIG=/tmp/kubeconfig
+                        kubectl get pods -l app=${IMAGE_NAME} -n ${K8S_NAMESPACE}
+                        kubectl get svc ${IMAGE_NAME} -n ${K8S_NAMESPACE}
+                        kubectl get ingress ${IMAGE_NAME} -n ${K8S_NAMESPACE}
+                    """
                 }
             }
         }
@@ -142,7 +147,7 @@ spec:
     post {
         failure {
             container('aws-tools') {
-                sh "kubectl rollout undo deployment/${IMAGE_NAME} -n ${K8S_NAMESPACE} || true"
+                sh "export KUBECONFIG=/tmp/kubeconfig && kubectl rollout undo deployment/${IMAGE_NAME} -n ${K8S_NAMESPACE} || true"
             }
         }
     }
