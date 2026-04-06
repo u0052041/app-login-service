@@ -49,7 +49,6 @@ spec:
         CLUSTER_NAME  = "main-eks"
         IMAGE_NAME    = "app-login-service"
         K8S_NAMESPACE = "default"
-        SSM_CERT_PATH = "/shared/wildcard-cert-arn"
     }
 
     stages {
@@ -97,28 +96,13 @@ spec:
             }
         }
 
-        stage('Read SSM Parameters') {
-            steps {
-                container('aws-tools') {
-                    script {
-                        env.WILDCARD_CERT_ARN = sh(
-                            script: "aws ssm get-parameter --name ${SSM_CERT_PATH} --region ${AWS_REGION} --query Parameter.Value --output text",
-                            returnStdout: true
-                        ).trim()
-                    }
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
                 container('aws-tools') {
                     sh """
                         export KUBECONFIG=/tmp/kubeconfig
                         export IMAGE_FULL=${env.IMAGE_FULL}
-                        export WILDCARD_CERT_ARN=${env.WILDCARD_CERT_ARN}
                         envsubst < k8s/deployment.yaml | kubectl apply -f -
-                        envsubst < k8s/ingress.yaml | kubectl apply -f -
                         kubectl rollout status deployment/${IMAGE_NAME} -n ${K8S_NAMESPACE} --timeout=120s
                     """
                 }
