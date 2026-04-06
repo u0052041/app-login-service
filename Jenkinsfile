@@ -27,6 +27,7 @@ spec:
         memory: 256Mi
   - name: aws-tools
     image: 677856867919.dkr.ecr.ap-northeast-1.amazonaws.com/jenkins:latest
+    imagePullPolicy: Always
     command: ["sleep", "infinity"]
     resources:
       requests:
