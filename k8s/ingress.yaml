@@ -7,17 +7,16 @@ metadata:
     # ── ALB 基礎 ──
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
-    alb.ingress.kubernetes.io/group.name: main       # 與其他服務共用同一個 ALB
-    alb.ingress.kubernetes.io/group.order: "10"
+    alb.ingress.kubernetes.io/group.name: main       # 與 test-app 共用同一個 ALB
+    alb.ingress.kubernetes.io/group.order: "20"      # 比 test-app(100) 優先匹配
 
     # ── HTTPS ──
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
     alb.ingress.kubernetes.io/ssl-redirect: "443"
-    # WILDCARD_CERT_ARN 由 Jenkinsfile 從 SSM 讀取後 envsubst 注入
     alb.ingress.kubernetes.io/certificate-arn: ${WILDCARD_CERT_ARN}
     alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
 
-    # ── Health Check（對應 /health 端點）──
+    # ── Health Check（直接打 pod 的 /health）──
     alb.ingress.kubernetes.io/healthcheck-path: /health
     alb.ingress.kubernetes.io/healthcheck-interval-seconds: "15"
     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
@@ -30,10 +29,10 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: auth.u0052041.com
+    - host: app.u0052041.com
       http:
         paths:
-          - path: /
+          - path: /auth
             pathType: Prefix
             backend:
               service:
